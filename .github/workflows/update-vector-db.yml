@@ -1,0 +1,58 @@
+name: Vector DB Daily Update
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  convert_csv:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Checkout my-neovim-pluginlist
+        uses: actions/checkout@v4
+        with:
+          repository: yutkat/my-neovim-pluginlist
+          path: data/my-neovim-pluginlist
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv install
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run convert script
+        run: ls data/my-neovim-pluginlist/[a-z]*.md | xargs -i bash -c "export GITHUB_TOKEN=$GITHUB_TOKEN; uv run scripts/convert_to_csv.py data/$(basename {}).csv {}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create csv
+        run: |
+          echo "URL,category,readme" > data/neovim-plugin-category.csv
+          awk 'FNR > 1' *.md.csv >> data/neovim-plugin-category.csv
+
+      - name: embedding
+        run: uv run scripts/embedding.py data/neovim-plugin-category.csv
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Commit chroma_db changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update chroma_db data"
+          file_pattern: chroma_db/**
+
