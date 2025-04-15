@@ -32,7 +32,7 @@ If you need a new category, please enter “New Category ()” and write the new
         '''
 
         response = client.chat.completions.create(
-            model="o3-mini",
+            model="gpt-4.1-mini",
             messages=[{"role": "user", "content": prompt}],
         )
 

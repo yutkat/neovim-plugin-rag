@@ -3,6 +3,7 @@ name: Fetch RSS Data
 on:
   schedule:
     - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   fetch_rss:
@@ -10,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - uses: actions/setup-python@v5
         with:
@@ -19,7 +22,7 @@ jobs:
         run: pip install uv
 
       - name: Install dependencies
-        run: uv install
+        run: uv sync
 
       - name: Run RSS fetch script
         run: uv run scripts/fetch_rss.py data/latest_rss.json
@@ -28,13 +31,13 @@ jobs:
         run: cat data/latest_rss.json
 
       - name: Find correct category
-        run: jq -r 'map(.title = "https://github.com/" + .title) | .[].title' data/latest_rss.json | xargs -i uv run scripts/search.py {} > data/search.json
+        run: jq -r 'map(.title = "https://github.com/" + .title) | .[].title' data/latest_rss.json | xargs -i uv run scripts/search.py {} | tee data/search.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find correct category
-        run: cat data/search.json | uv run scripts/predict_category.py > data/pr.md
+        run: cat data/search.json | uv run scripts/predict_category.py | tee data/pr.md
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
