@@ -5,6 +5,9 @@ on:
     - cron: '0 10 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   convert_csv:
     runs-on: ubuntu-latest
@@ -34,19 +37,18 @@ jobs:
         run: uv sync
 
       - name: Create a list to update
-        run: git log -p --since='1 day ago' --grep=Add -i --diff-filter=AM | grep '^+-' | grep -v '^+++' | sed 's/^+//g' | tee ../update-list.md
+        run: git log -p --since='1 day ago' --grep=Add -i --diff-filter=AM | grep '^+-' | grep -v '^+++' | sed 's/^+//g' | sed -E 's#^.*\]\((https://github\.com/[^)]+)\).*$#\1#' | tee ../update-list.txt
         working-directory: data/my-neovim-pluginlist/
-        #run: bash -c 'cd data/my-neovim-pluginlist/ && git log --since="1 day ago" --name-only --pretty=format:"" [a-z]*.md | grep . | sort -u' | tee data/update-files.txt
 
       - name: Run convert script
-        run: uv run scripts/convert_to_csv.py data/update-list.md.csv data/update-list.md
+        run: uv run scripts/convert_to_csv.py data/update-list.csv data/my-neovim-pluginlist data/update-list.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create csv
         run: |
           echo "URL,category,readme" > data/neovim-plugin-category.csv
-          awk 'FNR > 1' data/update-list.md.csv >> data/neovim-plugin-category.csv
+          awk 'FNR > 1' data/update-list.csv >> data/neovim-plugin-category.csv
 
       - name: embedding
         run: uv run scripts/embedding.py data/neovim-plugin-category.csv
