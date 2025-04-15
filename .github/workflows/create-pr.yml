@@ -36,8 +36,37 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Find correct category
+      - name: Create PR doc
         run: cat data/search.json | uv run scripts/predict_category.py | tee data/pr.md
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Checkout my-neovim-pluginlist
+        uses: actions/checkout@v4
+        with:
+          repository: yutkat/my-neovim-pluginlist
+          path: data/my-neovim-pluginlist
+          fetch-depth: 0
+
+      - name: Insert New plugin
+        run: cat data/pr.md | ./scripts/edit_pluginlist.sh
+
+      - name: Update table style
+        run:  echo "|URL|Category|Reason|" ; echo "|---|---|---|" ; cat data/pr.md | tee data/pr-with-header.md
+
+      - name: Create Pull Request on my-neovim-pluginlist
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: yutkat/my-neovim-pluginlist
+          path: data/my-neovim-pluginlist
+          commit-message: "Add"
+          committer: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
+          author: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
+          signoff: false
+          branch: "ai"
+          delete-branch: true 
+          base: main
+          title: "Add"
+          body-path: "data/pr-with-header.md"
+          labels: "automated pr, bot"
