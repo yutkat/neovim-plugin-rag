@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  convert_csv:
+  update_vector_db:
     runs-on: ubuntu-latest
 
     steps:

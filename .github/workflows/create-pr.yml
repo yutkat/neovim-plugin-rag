@@ -1,4 +1,4 @@
-name: Fetch RSS Data
+name: Create Pull Request to my-neovim-pluginlist
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  fetch_rss:
+  create_pr:
     runs-on: ubuntu-latest
 
     steps:
@@ -58,7 +58,6 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GH_PAT }}
-          repository: yutkat/my-neovim-pluginlist
           path: data/my-neovim-pluginlist
           commit-message: "Add"
           committer: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
