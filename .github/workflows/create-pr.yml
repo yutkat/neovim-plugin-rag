@@ -2,7 +2,7 @@ name: Create Pull Request to my-neovim-pluginlist
 
 on:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '30 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -52,7 +52,12 @@ jobs:
         run: cat data/pr.md | ./scripts/edit_pluginlist.sh
 
       - name: Update table style
-        run:  echo "|URL|Category|Reason|" ; echo "|---|---|---|" ; cat data/pr.md | tee data/pr-with-header.md
+        run: |
+          {
+            echo "|URL|Category|Reason|"
+            echo "|---|---|---|"
+            cat data/pr.md
+          } | tee data/pr-with-header.md
 
       - name: Create Pull Request on my-neovim-pluginlist
         uses: peter-evans/create-pull-request@v7
