@@ -21,12 +21,18 @@ Please give a brief explanation of this plugin and the plugin category.
 
 I looked up the categories in the vector DB I created, and found the following when I included the explanation of the plugin I mentioned earlier. Which category do you think is most appropriate?
 
+Notes:
+- If you are not sure about the category, please enter “Unknown” in the Category.
+- If you need a new category, please enter “New Category ()” and write the new category you are proposing in the parentheses.
+- You can exclude the following:
+  - Forks
+  - Repositories with default or template READMEs
+  - Repositories lacking descriptions (either in the repository description or the README)
+  - Repositories where the README is not in English 
+
 Please respond in the following simple format without header.
 
 |URL|Category|Reason|
-
-If you are not sure about the category, please enter “Unknown” in the Category.
-If you need a new category, please enter “New Category ()” and write the new category you are proposing in the parentheses.
 
 {json.dumps(results, indent=2, ensure_ascii=False)}
         '''
