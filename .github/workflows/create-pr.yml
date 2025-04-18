@@ -68,7 +68,7 @@ jobs:
           committer: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
           author: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
           signoff: false
-          branch: "ai"
+          branch: ai-${{ github.run_id }}-${{ github.run_attempt }}
           delete-branch: true 
           base: main
           title: "Add"
