@@ -15,6 +15,7 @@ def get_embedding(text):
 def upsert_to_chroma(collection, id, document, embedding, metadata):
     existing = collection.get(ids=[id])
     if existing["ids"]:
+        print(id, metadata)
         collection.update(
             ids=[id],
             documents=[document],
@@ -39,6 +40,7 @@ if __name__ == "__main__":
 
     for _, row in df.iterrows():
         embedding = get_embedding(row["readme"])
+        print(row["URL"])
         upsert_to_chroma(
             collection=collection,
             embedding=embedding,

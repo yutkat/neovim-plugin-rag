@@ -155,8 +155,8 @@ def process_url_list_to_csv(url_list_filepath: Path, search_dir: Path, output_fi
         # Fetch README only if found in markdown and category determined
         readme_text = fetch_github_readme(target_url, gh) # Pass initialized gh instance
         all_found_data.append({
-            "Category": found_category,
             "URL": target_url,
+            "Category": found_category,
             "readme": readme_text # Will contain empty string or ERROR_* on fetch failure
         })
         # Optional: Add a small delay to avoid hitting secondary rate limits aggressively
