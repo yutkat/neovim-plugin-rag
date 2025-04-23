@@ -25,6 +25,9 @@ jobs:
           path: data/my-neovim-pluginlist
           fetch-depth: 0
 
+      - name: Install required system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libomp-dev
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
