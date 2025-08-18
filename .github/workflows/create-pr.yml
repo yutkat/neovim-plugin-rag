@@ -77,3 +77,16 @@ jobs:
           title: "Add"
           body-path: "data/pr-with-header.md"
           labels: "automated pr, bot"
+
+      - name: Upload PR data for verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-data
+          path: data/pr-with-header.md
+
+      - name: Trigger category verification
+        run: |
+          BRANCH_NAME="ai-${{ github.run_id }}-${{ github.run_attempt }}"
+          gh workflow run verify-categories.yml -f branch_name="$BRANCH_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
