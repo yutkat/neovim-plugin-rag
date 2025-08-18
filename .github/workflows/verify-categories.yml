@@ -15,10 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Install Codex CLI
-        run: |
-          curl -fsSL https://cli.codex.sh/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        run: npm install -g @openai/codex
 
       - name: Setup Codex authentication
         run: |
@@ -64,6 +67,13 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Check if pr-with-header2.md exists
+        run: |
+          if [ ! -f "data/pr-with-header2.md" ]; then
+            echo "data/pr-with-header2.md does not exist. Processing completed."
+            exit 0
+          fi
 
       - name: Update Pull Request on my-neovim-pluginlist
         uses: peter-evans/create-pull-request@v7
