@@ -45,6 +45,7 @@ jobs:
           if [ -n "$PR_URL" ]; then
             echo "Found PR: $PR_URL"
             cd data/my-neovim-pluginlist
+            gh pr view --json body "${{ inputs.branch_name }}" | jq -r .body > .pr-with-header.md
 
             codex --ask-for-approval never --sandbox danger-full-access -m gpt-5 exec "
               Please analyze the README.md file in the current directory.
@@ -56,7 +57,7 @@ jobs:
               3. For each plugin, confirm if the category is appropriate
               4. If changes are necessary, please modify the README.md file directly
               5. Update the table with correct categories and provide clear reasons
-              6. Please save the selection reasons in the same format as ../pr-with-header.md as ../pr-with-header2.md
+              6. Please save the selection reasons in the same format as .pr-with-header.md as .pr-with-header2.md
 
               Please make the necessary edits to improve categorization accuracy.
             "
@@ -68,10 +69,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
-      - name: Check if pr-with-header2.md exists
+      - name: Check if .pr-with-header2.md exists
         run: |
-          if [ ! -f "data/pr-with-header2.md" ]; then
-            echo "data/pr-with-header2.md does not exist. Processing completed."
+          if [ ! -f "data/my-neovim-pluginlist/.pr-with-header2.md" ]; then
+            echo "data/my-neovim-pluginlist/.pr-with-header2.md does not exist. Processing completed."
             exit 0
           fi
 
@@ -88,5 +89,5 @@ jobs:
           delete-branch: true
           base: main
           title: "Add"
-          body-path: "data/pr-with-header2.md"
+          body-path: "data/my-neovim-pluginlist/.pr-with-header2.md"
           labels: "automated pr, bot"
