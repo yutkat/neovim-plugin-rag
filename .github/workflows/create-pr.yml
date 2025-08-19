@@ -84,9 +84,9 @@ jobs:
           name: pr-data
           path: data/pr-with-header.md
 
-      - name: Trigger category verification
-        run: |
-          BRANCH_NAME="ai-${{ github.run_id }}-${{ github.run_attempt }}"
-          gh workflow run verify-categories.yml -f branch_name="$BRANCH_NAME"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  verify_categories:
+    needs: create_pr
+    uses: ./.github/workflows/verify-categories.yml
+    with:
+      branch_name: ai-${{ github.run_id }}-${{ github.run_attempt }}
+    secrets: inherit

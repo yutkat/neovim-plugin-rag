@@ -1,6 +1,12 @@
 name: Verify Categories with Codex
 
 on:
+  workflow_call:
+    inputs:
+      branch_name:
+        description: 'Branch name of the PR to verify'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       branch_name:
