@@ -53,7 +53,7 @@ jobs:
             cd data/my-neovim-pluginlist
             gh pr view --json body "${{ inputs.branch_name }}" | jq -r .body > .pr-with-header.md
 
-            codex --ask-for-approval never --sandbox danger-full-access -m gpt-5 exec "
+            codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5 "
               Please analyze the markdown file ([a-z]*.md) in the current directory.
               This file contains Neovim plugins with their categories that were automatically added.
 
@@ -71,7 +71,7 @@ jobs:
 
               Output:
               - UPDATE: [a-z]*.md
-              - WROTE: pr-with-header2.md
+              - WROTE: .pr-with-header2.md
 
               Please make the necessary edits to improve categorization accuracy.
             "
