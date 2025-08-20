@@ -100,7 +100,6 @@ jobs:
           author: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
           signoff: false
           branch: ${{ inputs.branch_name }}
-          delete-branch: true
           base: main
           title: "Add"
           body-path: "data/my-neovim-pluginlist/.pr-with-header2.md"
