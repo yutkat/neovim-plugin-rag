@@ -53,30 +53,28 @@ jobs:
             cd data/my-neovim-pluginlist
             gh pr view --json body "${{ inputs.branch_name }}" | jq -r .body > .pr-with-header.md
 
-            codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5 "
+            codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5 '
               Please analyze the markdown file ([a-z]*.md) in the current directory.
               This file contains Neovim plugins with their categories that were automatically added.
 
-              Tasks:
-              1. Verify if the plugin categorizations in the [a-z]*.md are accurate. Run 'cat .pr-with-header.md' and 'git diff' to check the current status.
+              ## Tasks
+              1. Verify if the plugin categorizations in the [a-z]*.md are accurate. Run `cat .pr-with-header.md` and `git diff` to check the current status.
               2. Examine each plugin and their assigned categories.
               3. For each plugin, confirm if the category is appropriate.
               4. If changes are necessary, please update the [a-z]*.md file directly.
               5. Update the table with correct categories and provide clear reasons.
               6. Please save the selection reasons in the same format as .pr-with-header.md as .pr-with-header2.md
 
-              IMPORTANT:
+              ## IMPORTANT
               - Do not ask for confirmation. This task is running on CI.
               - If you cannot specify a category, keep it as is.
 
-              Output:
+              ## Output
               - UPDATE: [a-z]*.md
               - WROTE: .pr-with-header2.md
 
               Please make the necessary edits to improve categorization accuracy.
-            "
-            ls -la
-            cd ../..
+            '
           else
             echo "No PR found for branch: ${{ inputs.branch_name }}"
           fi
