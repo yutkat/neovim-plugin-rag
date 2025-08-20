@@ -63,11 +63,12 @@ jobs:
               3. For each plugin, confirm if the category is appropriate
               4. If changes are necessary, please modify the README.md file directly
               5. Update the table with correct categories and provide clear reasons
-              6. Please save the selection reasons in the same format as .pr-with-header.md as .pr-with-header2.md
+              6. Please save the selection reasons in the same format as `.pr-with-header.md` as `.pr-with-header2.md`
+              7. Check if `.pr-with-header2.md` file has been created.
 
               Please make the necessary edits to improve categorization accuracy.
             "
-
+            ls -la
             cd ../..
           else
             echo "No PR found for branch: ${{ inputs.branch_name }}"
@@ -79,7 +80,7 @@ jobs:
         run: |
           if [ ! -f "data/my-neovim-pluginlist/.pr-with-header2.md" ]; then
             echo "data/my-neovim-pluginlist/.pr-with-header2.md does not exist. Processing completed."
-            exit 0
+            exit 1
           fi
 
       - name: Update Pull Request on my-neovim-pluginlist
