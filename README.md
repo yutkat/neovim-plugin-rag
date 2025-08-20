@@ -12,7 +12,7 @@ This system automatically monitors new Neovim plugins and creates pull requests 
 
 Runs daily at 0:30 UTC to discover new plugins:
 
-- Fetches latest plugins from RSS feeds
+- Fetches latest plugins from RSS feeds (https://github.com/yutkat/new-neovim-plugin-rss)
 - Uses RAG to find similar existing plugins in the vector database
 - Predicts categories using OpenAI GPT-4
 - Creates pull request to `yutkat/my-neovim-pluginlist` with new plugins
