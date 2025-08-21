@@ -60,10 +60,24 @@ jobs:
               ## Tasks
               1. Verify if the plugin categorizations in the [a-z]*.md are accurate. Run `cat .pr-with-header.md` and `git diff` to check the current status.
               2. Examine each plugin and their assigned categories.
-              3. For each plugin, confirm if the category is appropriate.
-              4. If changes are necessary, please update the [a-z]*.md file directly.
-              5. Update the table with correct categories and provide clear reasons.
-              6. Please save the selection reasons in the same format as .pr-with-header.md as .pr-with-header2.md
+                  2.1. Visit the corresponding repository on **GitHub**.
+                  2.2. If any of the following items apply, remove the added plugins from the list.
+                      - The plugin is a fork of another repository.
+                      - It is a new colorscheme plugin.
+                      - The repository has no README.
+                      - The README is written in a language other than English.
+                      - The repository is a Neovim configuration rather than a plugin.
+                      - The repository is a sample plugin created solely for learning purposes.
+              3. For each plugin, confirm and update if the category is appropriate.
+                  3.1. From the README or other files, **infer which Neovim‑plugin category** the repository belongs to.
+                  3.2. In `@.claude/SECTION.md`, consult the table of contents and locate the markdown file that contains that category.
+                  3.3. Open that markdown file and insert the added plugin at the appropriate position.
+                      - If no suitable section exists, create one first and then add the plugin.
+                      - If there are subsections, review them and add the plugin to the **most appropriate subsection** whenever possible.
+                      - Add new plugins at the bottom of the section.
+                      - If there are related plugins, list them below the relevant plugin.
+              4. Update the table with correct categories and provide clear reasons.
+              5. Please save the selection reasons in the same format as .pr-with-header.md as .pr-with-header2.md
 
               ## IMPORTANT
               - Do not ask for confirmation. This task is running on CI.
