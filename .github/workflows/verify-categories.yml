@@ -102,17 +102,21 @@ jobs:
             exit 1
           fi
 
-      - name: Update Pull Request on my-neovim-pluginlist
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GH_PAT }}
-          path: data/my-neovim-pluginlist
-          commit-message: "Add"
-          committer: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
-          author: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
-          signoff: false
-          branch: ${{ inputs.branch_name }}
-          base: main
-          title: "Add"
-          body-path: "data/my-neovim-pluginlist/.pr-with-header2.md"
-          labels: "automated pr, bot"
+      - name: Commit and push changes to my-neovim-pluginlist
+        run: |
+          cd data/my-neovim-pluginlist
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/yutkat/my-neovim-pluginlist.git
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git add .
+            git commit -m "Add"
+            git push origin ${{ inputs.branch_name }}
+            echo "Changes committed and pushed to branch ${{ inputs.branch_name }}"
+          fi
+          gh pr edit ${{ inputs.branch_name }} --body-file .pr-with-header2.md
+          echo "PR body updated with new content"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}

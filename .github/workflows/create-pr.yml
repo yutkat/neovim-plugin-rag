@@ -49,6 +49,7 @@ jobs:
         with:
           repository: yutkat/my-neovim-pluginlist
           path: data/my-neovim-pluginlist
+          token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
 
       - name: Insert New plugin
@@ -63,20 +64,23 @@ jobs:
           } | tee data/pr-with-header.md
 
       - name: Create Pull Request on my-neovim-pluginlist
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GH_PAT }}
-          path: data/my-neovim-pluginlist
-          commit-message: "Add"
-          committer: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
-          author: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
-          signoff: false
-          branch: ai-${{ github.run_id }}-${{ github.run_attempt }}
-          delete-branch: true 
-          base: main
-          title: "Add"
-          body-path: "data/pr-with-header.md"
-          labels: "automated pr, bot"
+        run: |
+          cd data/my-neovim-pluginlist
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/yutkat/my-neovim-pluginlist.git
+          git checkout -b ai-${{ github.run_id }}-${{ github.run_attempt }}
+          git add .
+          git commit -m "Add" || echo "No changes to commit"
+          git push origin ai-${{ github.run_id }}-${{ github.run_attempt }}
+          gh pr create \
+            --title "Add" \
+            --body-file "../../data/pr-with-header.md" \
+            --base main \
+            --head ai-${{ github.run_id }}-${{ github.run_attempt }} \
+            --label "automated pr,bot"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Upload PR data for verification
         uses: actions/upload-artifact@v4
