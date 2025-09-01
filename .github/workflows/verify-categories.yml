@@ -21,6 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create GitHub App token (yutkat/my-neovim-pluginlist)
+        id: app_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: yutkat
+          repositories: my-neovim-pluginlist
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,7 +49,7 @@ jobs:
           repository: yutkat/my-neovim-pluginlist
           path: data/my-neovim-pluginlist
           ref: ${{ inputs.branch_name }}
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ steps.app_token.outputs.token }}
           fetch-depth: 0
 
       - name: Find and verify PR by branch
@@ -93,7 +102,7 @@ jobs:
             echo "No PR found for branch: ${{ inputs.branch_name }}"
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
 
       - name: Check if .pr-with-header2.md exists
         run: |
@@ -107,7 +116,7 @@ jobs:
           cd data/my-neovim-pluginlist
           git config user.name "GitHub Actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/yutkat/my-neovim-pluginlist.git
+          git remote set-url origin https://x-access-token:${APP_TOKEN}@github.com/yutkat/my-neovim-pluginlist.git
           if git diff --quiet && git diff --cached --quiet; then
             echo "No changes to commit"
           else
@@ -119,4 +128,20 @@ jobs:
           gh pr edit ${{ inputs.branch_name }} --body-file .pr-with-header2.md
           echo "PR body updated with new content"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+
+      - name: Create GitHub App token (this repository)
+        if: always()
+        id: app_token_self
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Refresh CODEX_AUTH secret from updated auth.json
+        if: always()
+        run: |
+          gh secret set CODEX_AUTH -R "${{ github.repository }}" -b"$(cat ~/.codex/auth.json)"
+        env:
+          GH_TOKEN: ${{ steps.app_token_self.outputs.token }}
