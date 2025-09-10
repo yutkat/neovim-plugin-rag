@@ -43,6 +43,10 @@ jobs:
           mkdir -p ~/.codex
           echo '${{ secrets.CODEX_AUTH }}' > ~/.codex/auth.json
 
+      - name: Check Codex authentication update
+        run: |
+          cat ~/.codex/auth.json | jq -r '.last_refresh'
+
       - name: Checkout my-neovim-pluginlist
         uses: actions/checkout@v4
         with:
