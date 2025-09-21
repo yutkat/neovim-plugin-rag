@@ -130,6 +130,7 @@ jobs:
             echo "Changes committed and pushed to branch ${{ inputs.branch_name }}"
           fi
           gh pr edit ${{ inputs.branch_name }} --body-file .pr-with-header2.md
+          gh pr edit ${{ inputs.branch_name }} --add-reviewer yutkat --add-assignee yutkat
           echo "PR body updated with new content"
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
