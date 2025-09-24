@@ -35,6 +35,16 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Cache Codex workspace
+        uses: actions/cache@v4
+        with:
+          path: |
+            $HOME/.codex
+            !$HOME/.codex/auth.json
+          key: codex-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            codex-${{ runner.os }}-
+
       - name: Install Codex CLI
         run: npm install -g @openai/codex
 
