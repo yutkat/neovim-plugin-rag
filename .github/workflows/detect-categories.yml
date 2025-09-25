@@ -1,18 +1,9 @@
-name: Verify Categories with Codex
+name: Create PR with Codex
 
 on:
-  workflow_call:
-    inputs:
-      branch_name:
-        description: 'Branch name of the PR to verify'
-        required: true
-        type: string
+  schedule:
+    - cron: '30 0 * * *'
   workflow_dispatch:
-    inputs:
-      branch_name:
-        description: 'Branch name of the PR to verify'
-        required: true
-        type: string
 
 jobs:
   verify:
@@ -34,6 +25,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Install required system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libomp-dev
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync
 
       - name: Cache Codex workspace
         uses: actions/cache@v4
@@ -62,26 +66,34 @@ jobs:
         with:
           repository: yutkat/my-neovim-pluginlist
           path: data/my-neovim-pluginlist
-          ref: ${{ inputs.branch_name }}
+          ref: ai-${{ github.run_id }}
           token: ${{ steps.app_token.outputs.token }}
           fetch-depth: 0
 
+      - name: Run RSS fetch script
+        run: uv run scripts/fetch_rss.py data/latest_rss.json
+
+      - name: Check RSS data
+        run: cat data/latest_rss.json
+
+      - name: Find correct category
+        run: jq -r 'map(.title = "https://github.com/" + .title) | .[].title' data/latest_rss.json | tee data/my-neovim-pluginlist/.new_plugins.txt
+
       - name: Find and verify PR by branch
         run: |
-          echo "Finding PR for branch: ${{ inputs.branch_name }}"
-          PR_URL=$(gh pr list --repo yutkat/my-neovim-pluginlist --head "${{ inputs.branch_name }}" --state open --limit 1 --json url --jq '.[0].url')
+          echo "Finding PR for branch: ai-${{ github.run_id }}"
+          PR_URL=$(gh pr list --repo yutkat/my-neovim-pluginlist --head "ai-${{ github.run_id }}" --state open --limit 1 --json url --jq '.[0].url')
 
           if [ -n "$PR_URL" ]; then
             echo "Found PR: $PR_URL"
             cd data/my-neovim-pluginlist
-            gh pr view --json body "${{ inputs.branch_name }}" | jq -r .body > .pr-with-header.md
 
             codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5-codex '
               Please analyze the markdown file ([a-z]*.md) in the current directory.
               This file contains Neovim plugins with their categories that were automatically added.
 
               ## Tasks
-              1. Verify if the plugin categorizations in the [a-z]*.md are accurate. Run `cat .pr-with-header.md` and `git diff` to check the current status.
+              1. Get a list of new plugins to add. Run `cat .new_plugins.txt`.
               2. Examine each plugin and their assigned categories.
                   2.1. Visit the corresponding repository on **GitHub**.
                   2.2. If any of the following items apply, remove the added plugins from the list.
@@ -100,11 +112,14 @@ jobs:
                       - Add new plugins at the bottom of the section.
                       - If there are related plugins, list them below the relevant plugin.
               4. Update the table with correct categories and provide clear reasons.
-              5. Please save the selection reasons in the same format as .pr-with-header.md as .pr-with-header2.md
+              5. Please write the selection reasons in following simple format without header |URL|Category|Reason| and save it as .pr-with-header2.md
 
               ## IMPORTANT
               - Do not ask for confirmation. This task is running on CI.
               - If you cannot specify a category, keep it as is.
+
+              ## Input Repositories
+              - .new_plugins.txt
 
               ## Output
               - UPDATE: [a-z]*.md
@@ -113,7 +128,7 @@ jobs:
               Please make the necessary edits to improve categorization accuracy.
             '
           else
-            echo "No PR found for branch: ${{ inputs.branch_name }}"
+            echo "No PR found for branch: ai-${{ github.run_id }}"
           fi
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
@@ -136,11 +151,16 @@ jobs:
           else
             git add .
             git commit -m "Add"
-            git push origin ${{ inputs.branch_name }}
-            echo "Changes committed and pushed to branch ${{ inputs.branch_name }}"
+            git push origin ai-${{ github.run_id }}
+            echo "Changes committed and pushed to branch ai-${{ github.run_id }}"
           fi
-          gh pr edit ${{ inputs.branch_name }} --body-file .pr-with-header2.md
-          gh pr edit ${{ inputs.branch_name }} --add-assignee yutkat
+          gh pr create \
+            --title "Add" \
+            --body-file ".pr-with-header2.md" \
+            --base main \
+            --head ai-${{ github.run_id }} \
+            --add-assignee yutkat
+            --label "automated pr,bot"
           echo "PR body updated with new content"
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
