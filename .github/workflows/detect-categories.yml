@@ -1,4 +1,4 @@
-name: Create PR with Codex
+name: Detect Categories and Create PR
 
 on:
   schedule:
