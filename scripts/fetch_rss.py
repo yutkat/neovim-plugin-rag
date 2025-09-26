@@ -13,13 +13,13 @@ output_filename = sys.argv[1]
 
 feed = feedparser.parse(RSS_URL)
 
-now_jst = datetime.now(timezone(timedelta(hours=9)))
+now_utc = datetime.now(timezone.utc)
 
 latest_entries = []
 for entry in feed.entries:
-    entry_date = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=0)))
+    entry_date = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
     
-    if entry_date.date() == now_jst.date():
+    if entry_date.date() == now_utc.date():
         latest_entries.append({
             "title": entry.title,
             "link": entry.link,
