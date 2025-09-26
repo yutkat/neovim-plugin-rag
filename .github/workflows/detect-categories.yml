@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify:
+  create:
     runs-on: ubuntu-latest
 
     steps:
@@ -66,7 +66,6 @@ jobs:
         with:
           repository: yutkat/my-neovim-pluginlist
           path: data/my-neovim-pluginlist
-          ref: ai-${{ github.run_id }}
           token: ${{ steps.app_token.outputs.token }}
           fetch-depth: 0
 
@@ -76,60 +75,55 @@ jobs:
       - name: Check RSS data
         run: cat data/latest_rss.json
 
-      - name: Find correct category
+      - name: Get new plugins
         run: jq -r 'map(.title = "https://github.com/" + .title) | .[].title' data/latest_rss.json | tee data/my-neovim-pluginlist/.new_plugins.txt
 
-      - name: Find and verify PR by branch
+      - name:  Create PR
         run: |
           echo "Finding PR for branch: ai-${{ github.run_id }}"
-          PR_URL=$(gh pr list --repo yutkat/my-neovim-pluginlist --head "ai-${{ github.run_id }}" --state open --limit 1 --json url --jq '.[0].url')
+          cd data/my-neovim-pluginlist
 
-          if [ -n "$PR_URL" ]; then
-            echo "Found PR: $PR_URL"
-            cd data/my-neovim-pluginlist
+          codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5-codex '
+            You are responsible for categorizing new Neovim plugins and writing them in a Markdown file.
+            Follow these steps to add a new Neovim plugin to the correct category and location within our Markdown files ([a-z]*.md).
 
-            codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5-codex '
-              Please analyze the markdown file ([a-z]*.md) in the current directory.
-              This file contains Neovim plugins with their categories that were automatically added.
+            ## Tasks
+            1. Get a list of new plugins to add. Run `cat .new_plugins.txt`.
+            2. Examine each plugin and their assigned categories.
+                2.1. Visit the corresponding repository on **GitHub**.
+                2.2. If any of the following items apply, remove the added plugins from the list.
+                    - The plugin is a fork of another repository.
+                    - It is a new colorscheme plugin.
+                    - The repository has no README.
+                    - The README is written in a language other than English.
+                    - The repository is a Neovim configuration rather than a plugin.
+                    - The repository is a sample plugin created solely for learning purposes.
+            3. For each plugin, confirm and update if the category is appropriate.
+                3.1. From the README or other files, **infer which Neovim‑plugin category** the repository belongs to.
+                3.2. In `@.claude/SECTION.md`, consult the table of contents and locate the markdown file that contains that category.
+                3.3. Open that markdown file and insert the added plugin at the appropriate position.
+                    - If no suitable section exists, create one first and then add the plugin.
+                    - If there are subsections, review them and add the plugin to the **most appropriate subsection** whenever possible.
+                    - Add new plugins at the bottom of the section.
+                    - If there are related plugins, list them below the relevant plugin.
+            4. Update the table with correct categories and provide clear reasons.
+            5. Please write the selection reasons in following simple markdown table.
+                - The format is a Markdown table with the following order: |URL|Category|Reason|.
+                - Save it as .pr-with-header2.md
 
-              ## Tasks
-              1. Get a list of new plugins to add. Run `cat .new_plugins.txt`.
-              2. Examine each plugin and their assigned categories.
-                  2.1. Visit the corresponding repository on **GitHub**.
-                  2.2. If any of the following items apply, remove the added plugins from the list.
-                      - The plugin is a fork of another repository.
-                      - It is a new colorscheme plugin.
-                      - The repository has no README.
-                      - The README is written in a language other than English.
-                      - The repository is a Neovim configuration rather than a plugin.
-                      - The repository is a sample plugin created solely for learning purposes.
-              3. For each plugin, confirm and update if the category is appropriate.
-                  3.1. From the README or other files, **infer which Neovim‑plugin category** the repository belongs to.
-                  3.2. In `@.claude/SECTION.md`, consult the table of contents and locate the markdown file that contains that category.
-                  3.3. Open that markdown file and insert the added plugin at the appropriate position.
-                      - If no suitable section exists, create one first and then add the plugin.
-                      - If there are subsections, review them and add the plugin to the **most appropriate subsection** whenever possible.
-                      - Add new plugins at the bottom of the section.
-                      - If there are related plugins, list them below the relevant plugin.
-              4. Update the table with correct categories and provide clear reasons.
-              5. Please write the selection reasons in following simple format without header |URL|Category|Reason| and save it as .pr-with-header2.md
+            ## IMPORTANT
+            - Do not ask for confirmation. This task is running on CI.
+            - If you cannot specify a category, keep it as is.
 
-              ## IMPORTANT
-              - Do not ask for confirmation. This task is running on CI.
-              - If you cannot specify a category, keep it as is.
+            ## Input Repositories
+            - .new_plugins.txt
 
-              ## Input Repositories
-              - .new_plugins.txt
+            ## Output
+            - UPDATE: [a-z]*.md
+            - WROTE: .pr-with-header2.md
 
-              ## Output
-              - UPDATE: [a-z]*.md
-              - WROTE: .pr-with-header2.md
-
-              Please make the necessary edits to improve categorization accuracy.
-            '
-          else
-            echo "No PR found for branch: ai-${{ github.run_id }}"
-          fi
+            Please make the necessary edits to improve categorization accuracy.
+          '
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
 
@@ -149,18 +143,19 @@ jobs:
           if git diff --quiet && git diff --cached --quiet; then
             echo "No changes to commit"
           else
+            git checkout -b ai-${{ github.run_id }}
             git add .
             git commit -m "Add"
             git push origin ai-${{ github.run_id }}
             echo "Changes committed and pushed to branch ai-${{ github.run_id }}"
+            gh pr create \
+              --title "Add" \
+              --body-file ".pr-with-header2.md" \
+              --base main \
+              --head ai-${{ github.run_id }} \
+              --assignee yutkat \
+              --label "automated pr,bot"
           fi
-          gh pr create \
-            --title "Add" \
-            --body-file ".pr-with-header2.md" \
-            --base main \
-            --head ai-${{ github.run_id }} \
-            --add-assignee yutkat
-            --label "automated pr,bot"
           echo "PR body updated with new content"
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
