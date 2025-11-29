@@ -83,7 +83,7 @@ jobs:
           echo "Finding PR for branch: ai-${{ github.run_id }}"
           cd data/my-neovim-pluginlist
 
-          codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5-codex '
+          codex --ask-for-approval never exec --sandbox danger-full-access -m gpt-5.1-codex-max '
             You are responsible for categorizing new Neovim plugins and writing them in a Markdown file.
             Follow these steps to add a new Neovim plugin to the correct category and location within our Markdown files ([a-z]*.md).
 
