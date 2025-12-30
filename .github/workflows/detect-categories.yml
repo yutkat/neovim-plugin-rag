@@ -22,14 +22,14 @@ jobs:
           repositories: my-neovim-pluginlist
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
       - name: Install required system dependencies
         run: sudo apt-get update && sudo apt-get install -y libomp-dev
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
@@ -62,7 +62,7 @@ jobs:
           cat ~/.codex/auth.json | jq -r '.last_refresh'
 
       - name: Checkout my-neovim-pluginlist
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: yutkat/my-neovim-pluginlist
           path: data/my-neovim-pluginlist
