@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Create GitHub App token (yutkat/my-neovim-pluginlist)
         id: app_token
@@ -40,7 +40,7 @@ jobs:
         run: uv sync
 
       - name: Cache Codex workspace
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.codex
@@ -144,7 +144,7 @@ jobs:
             echo "No changes to commit"
           else
             git checkout -b ai-${{ github.run_id }}
-            git add .
+            git add *.md
             git commit -m "Add"
             git push origin ai-${{ github.run_id }}
             echo "Changes committed and pushed to branch ai-${{ github.run_id }}"
