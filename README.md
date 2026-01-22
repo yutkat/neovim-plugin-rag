@@ -1,5 +1,9 @@
 # Neovim Plugin RAG
 
+> [!WARNING]
+> **This repository has been archived.**
+> The functionality has been moved to [yutkat/my-neovim-pluginlist](https://github.com/yutkat/my-neovim-pluginlist).
+
 Automated system for discovering, categorizing, and updating Neovim plugins using RAG (Retrieval-Augmented Generation) technology.
 
 ## What it does
